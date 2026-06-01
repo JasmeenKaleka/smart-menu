@@ -323,9 +323,27 @@ let filtered = [...items];
 
 
 if (loading) {
-return ( <div className="min-h-screen flex items-center justify-center text-lg font-semibold">
-Loading Menu... </div>
-);
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center">
+      <img
+        src="/logo.png"
+        alt="Logo"
+        className="
+          w-28
+          h-28
+          rounded-full
+          object-cover
+          shadow-xl
+          mb-6
+          animate-pulse
+        "
+      />
+
+      <h2 className="text-xl font-bold">
+        Loading Menu...
+      </h2>
+    </div>
+  );
 }
 
 return ( <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
