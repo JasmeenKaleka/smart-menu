@@ -19,6 +19,7 @@ type Item = {
   description: string;
   image_url: string;
   is_available: boolean;
+   is_popular: boolean;
   category_id: string;
   categories?: {
     name: string;
@@ -31,6 +32,9 @@ export default function ItemsPage() {
 
   const [items, setItems] =
     useState<Item[]>([]);
+
+    const [search, setSearch] =
+  useState("");
 
   const [editingId, setEditingId] =
     useState("");
@@ -47,6 +51,9 @@ export default function ItemsPage() {
 
   const [isAvailable, setIsAvailable] =
     useState(true);
+
+  const [isPopular, setIsPopular] =
+  useState(false);
 
   const [variants, setVariants] =
     useState<Variant[]>([
@@ -188,6 +195,8 @@ export default function ItemsPage() {
 
     setIsAvailable(true);
 
+    setIsPopular(false);
+
     setVariants([
       {
         name: "",
@@ -224,6 +233,8 @@ export default function ItemsPage() {
 
       is_available:
         isAvailable,
+
+        is_popular: isPopular,
     };
 
     let itemId =
@@ -359,6 +370,10 @@ export default function ItemsPage() {
     setIsAvailable(
       item.is_available
     );
+
+    setIsPopular(
+  item.is_popular || false
+);
 
     const {
       data,
@@ -624,6 +639,21 @@ export default function ItemsPage() {
               Available
             </label>
           </div>
+          <div>
+  <label className="flex gap-3 items-center">
+    <input
+      type="checkbox"
+      checked={isPopular}
+      onChange={(e) =>
+        setIsPopular(
+          e.target.checked
+        )
+      }
+    />
+
+    Bestseller Item
+  </label>
+</div>
 
           <div className="space-y-4">
 
@@ -731,13 +761,37 @@ export default function ItemsPage() {
 
       <div className="border rounded-lg p-4 h-fit">
 
-        <h2 className="text-xl font-bold mb-4">
-          Existing Items
-        </h2>
+<h2 className="text-xl font-bold mb-4">
+  Existing Items
+</h2>
+
+<input
+  type="text"
+  placeholder="Search item..."
+  value={search}
+  onChange={(e) =>
+    setSearch(e.target.value)
+  }
+  className="
+    w-full
+    border
+    p-3
+    rounded-lg
+    mb-4
+  "
+/>
 
         <div className="space-y-3">
 
-          {items.map(
+          {items
+  .filter((item) =>
+    item.name
+      .toLowerCase()
+      .includes(
+        search.toLowerCase()
+      )
+  )
+  .map(
             (
               item
             ) => (
@@ -764,6 +818,24 @@ export default function ItemsPage() {
                   }
                 </p>
 
+                {item.is_popular && (
+  <div
+    className="
+      inline-block
+      mt-1
+      px-2
+      py-1
+      bg-yellow-100
+      text-yellow-700
+      rounded-full
+      text-xs
+      font-semibold
+    "
+  >
+    ⭐ Bestseller
+  </div>
+)}
+
                 <p className="text-sm text-gray-500">
                   {
                     item
@@ -777,6 +849,8 @@ export default function ItemsPage() {
                     ? "🟢 Available"
                     : "🔴 Hidden"}
                 </p>
+
+                
 
                 <div className="flex gap-4 mt-3">
 
