@@ -10,6 +10,39 @@ export default function SettingsPage() {
 
   const [primaryColor, setPrimaryColor] = useState("#0f172a");
   const [secondaryColor, setSecondaryColor] = useState("#f59e0b");
+  const [backgroundColor, setBackgroundColor] =
+  useState("#fafafa");
+  
+
+const [backgroundImage, setBackgroundImage] =
+  useState("");
+
+const [cardColor, setCardColor] =
+  useState("#ffffff");
+
+const [cardTextColor, setCardTextColor] =
+  useState("#111827");
+
+const [buttonGradientFrom, setButtonGradientFrom] =
+  useState("#fbbf24");
+
+const [buttonGradientTo, setButtonGradientTo] =
+  useState("#ea580c");
+
+const [headerColor, setHeaderColor] =
+  useState("#ffffff");
+
+const [footerColor, setFooterColor] =
+  useState("#111827");
+
+const [location, setLocation] =
+  useState("");
+
+const [phone, setPhone] =
+  useState("");
+
+const [email, setEmail] =
+  useState("");  
 
   const [banners, setBanners] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +72,49 @@ export default function SettingsPage() {
     setLogoUrl(setting.logo_url || "");
     setPrimaryColor(setting.primary_color || "#0f172a");
     setSecondaryColor(setting.secondary_color || "#f59e0b");
+    setBackgroundColor(
+  setting.background_color || "#fafafa"
+);
+
+setBackgroundImage(
+  setting.background_image || ""
+);
+
+setCardColor(
+  setting.card_color || "#ffffff"
+);
+
+setCardTextColor(
+  setting.card_text_color || "#111827"
+);
+
+setButtonGradientFrom(
+  setting.button_gradient_from || "#fbbf24"
+);
+
+setButtonGradientTo(
+  setting.button_gradient_to || "#ea580c"
+);
+
+setHeaderColor(
+  setting.header_color || "#ffffff"
+);
+
+setFooterColor(
+  setting.footer_color || "#111827"
+);
+
+setLocation(
+  setting.location || ""
+);
+
+setPhone(
+  setting.phone || ""
+);
+
+setEmail(
+  setting.email || ""
+);
 
     const { data: bannerData } = await supabase
       .from("banners")
@@ -114,7 +190,15 @@ export default function SettingsPage() {
       return;
     }
 
-    const nextOrder = banners.length + 1;
+    const { count } = await supabase
+  .from("banners")
+  .select("*", {
+    count: "exact",
+    head: true,
+  });
+
+const nextOrder =
+  (count || 0) + 1;
 
     const { error } = await supabase
       .from("banners")
@@ -133,16 +217,83 @@ export default function SettingsPage() {
       result.url,
     ]);
   }
+  async function uploadBackground(
+  event: React.ChangeEvent<HTMLInputElement>
+) {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+  const response = await fetch(
+    "/api/upload/background",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    alert(result.error);
+    return;
+  }
+
+  setBackgroundImage(
+    result.url
+  );
+}
+
+async function deleteBanner(
+  bannerUrl: string
+) {
+  const { error } =
+    await supabase
+      .from("banners")
+      .delete()
+      .eq(
+        "image_url",
+        bannerUrl
+      );
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  await loadSettings();
+}
 
   async function saveSettings() {
     const { error } = await supabase
       .from("settings")
       .update({
-        cafe_name: cafeName,
-        logo_url: logoUrl,
-        primary_color: primaryColor,
-        secondary_color: secondaryColor,
-      })
+  cafe_name: cafeName,
+  logo_url: logoUrl,
+
+  primary_color: primaryColor,
+  secondary_color: secondaryColor,
+
+  location: location,
+phone: phone,
+email: email,
+
+  background_color: backgroundColor,
+  background_image: backgroundImage,
+
+  card_color: cardColor,
+  card_text_color: cardTextColor,
+
+  button_gradient_from: buttonGradientFrom,
+  button_gradient_to: buttonGradientTo,
+
+  header_color: headerColor,
+  footer_color: footerColor,
+})
       .eq("id", id);
 
     if (error) {
@@ -258,15 +409,106 @@ export default function SettingsPage() {
 
         <div className="grid grid-cols-2 gap-4 mt-4">
           {banners.map((banner, index) => (
-            <img
-              key={index}
-              src={banner}
-              alt={`Banner ${index + 1}`}
-              className="rounded border"
-            />
-          ))}
+  <div
+    key={index}
+    className="space-y-2"
+  >
+    <img
+      src={banner}
+      alt={`Banner ${index + 1}`}
+      className="
+        rounded
+        border
+      "
+    />
+
+    <button
+      type="button"
+      onClick={() =>
+        deleteBanner(
+          banner
+        )
+      }
+      className="
+        w-full
+        py-2
+        rounded-lg
+        bg-black
+        text-white
+      "
+    >
+      Delete Banner
+    </button>
+  </div>
+))}
         </div>
       </div>
+
+      <div>
+  <label className="block mb-2">
+    Menu Background Image
+  </label>
+
+  <div className="space-y-3">
+    <label
+      htmlFor="background-upload"
+      className="
+        inline-block
+        bg-black
+        text-white
+        px-4
+        py-2
+        rounded
+        cursor-pointer
+        hover:opacity-90
+      "
+    >
+      Upload Background
+    </label>
+
+    <input
+      id="background-upload"
+      type="file"
+      accept=".jpg,.jpeg,.png,.webp"
+      onChange={
+        uploadBackground
+      }
+      className="hidden"
+    />
+  </div>
+
+  {backgroundImage && (
+  <div className="mt-4">
+    <img
+      src={backgroundImage}
+      alt="Background"
+      className="
+        rounded-xl
+        border
+        h-40
+        object-cover
+      "
+    />
+
+    <button
+      type="button"
+      onClick={() =>
+        setBackgroundImage("")
+      }
+      className="
+        mt-3
+        px-4
+        py-2
+        rounded-lg
+        bg-black
+        text-white
+      "
+    >
+      Delete Background
+    </button>
+  </div>
+)}
+</div>
 
       <div>
         <label className="block mb-2">
@@ -295,6 +537,174 @@ export default function SettingsPage() {
           }
         />
       </div>
+      <div>
+  <label className="block mb-2">
+    Background Color
+  </label>
+
+  <input
+    type="color"
+    value={backgroundColor}
+    onChange={(e) =>
+      setBackgroundColor(
+        e.target.value
+      )
+    }
+  />
+</div>
+<div>
+  <label className="block mb-2">
+    Card Color
+  </label>
+
+  <input
+    type="color"
+    value={cardColor}
+    onChange={(e) =>
+      setCardColor(
+        e.target.value
+      )
+    }
+  />
+</div>
+<div>
+  <label className="block mb-2">
+    Card Text Color
+  </label>
+
+  <input
+    type="color"
+    value={cardTextColor}
+    onChange={(e) =>
+      setCardTextColor(
+        e.target.value
+      )
+    }
+  />
+</div>
+<div>
+  <label className="block mb-2">
+    Button Gradient Start
+  </label>
+
+  <input
+    type="color"
+    value={buttonGradientFrom}
+    onChange={(e) =>
+      setButtonGradientFrom(
+        e.target.value
+      )
+    }
+  />
+</div>
+<div>
+  <label className="block mb-2">
+    Button Gradient End
+  </label>
+
+  <input
+    type="color"
+    value={buttonGradientTo}
+    onChange={(e) =>
+      setButtonGradientTo(
+        e.target.value
+      )
+    }
+  />
+</div>
+<div>
+  <label className="block mb-2">
+    Header Color
+  </label>
+
+  <input
+    type="color"
+    value={headerColor}
+    onChange={(e) =>
+      setHeaderColor(
+        e.target.value
+      )
+    }
+  />
+</div>
+<div>
+  <label className="block mb-2">
+    Footer Color
+  </label>
+
+  <input
+    type="color"
+    value={footerColor}
+    onChange={(e) =>
+      setFooterColor(
+        e.target.value
+      )
+    }
+  />
+</div>
+
+<div>
+  <label className="block mb-2">
+    Restaurant Location
+  </label>
+
+  <input
+    type="text"
+    value={location}
+    onChange={(e) =>
+      setLocation(e.target.value)
+    }
+    className="
+      w-full
+      border
+      p-3
+      rounded
+    "
+    placeholder="Patiala, Punjab"
+  />
+</div>
+
+<div>
+  <label className="block mb-2">
+    Phone Number
+  </label>
+
+  <input
+    type="text"
+    value={phone}
+    onChange={(e) =>
+      setPhone(e.target.value)
+    }
+    className="
+      w-full
+      border
+      p-3
+      rounded
+    "
+    placeholder="+91 98765 43210"
+  />
+</div>
+
+<div>
+  <label className="block mb-2">
+    Email Address
+  </label>
+
+  <input
+    type="email"
+    value={email}
+    onChange={(e) =>
+      setEmail(e.target.value)
+    }
+    className="
+      w-full
+      border
+      p-3
+      rounded
+    "
+    placeholder="hello@cafe.com"
+  />
+</div>
 
       <button
         onClick={saveSettings}

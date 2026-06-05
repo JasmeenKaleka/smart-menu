@@ -12,10 +12,27 @@ const greatVibes = Great_Vibes({
 
 
 type Settings = {
-cafe_name: string;
-logo_url: string;
-primary_color: string;
-secondary_color: string;
+  cafe_name: string;
+  logo_url: string;
+
+  primary_color: string;
+  secondary_color: string;
+
+  location: string;
+phone: string;
+email: string;
+
+  background_color: string;
+  background_image: string;
+
+  card_color: string;
+  card_text_color: string;
+
+  button_gradient_from: string;
+  button_gradient_to: string;
+
+  header_color: string;
+  footer_color: string;
 };
 
 type Banner = {
@@ -83,6 +100,15 @@ useState<string[]>([]);
 const [showTopButton, setShowTopButton] =
   useState(false);
 
+const [location, setLocation] =
+  useState("");
+
+const [phone, setPhone] =
+  useState("");
+
+const [email, setEmail] =
+  useState("");  
+
 
 const router = useRouter();  
 
@@ -129,15 +155,31 @@ supabase
   ]);
 
   if (
-    settingsRes.data &&
-    settingsRes.data.length > 0
-  ) {
-    setSettings(settingsRes.data[0]);
-  }
+  settingsRes.data &&
+  settingsRes.data.length > 0
+) {
+  const setting =
+    settingsRes.data[0];
+
+  setSettings(setting);
+
+  setLocation(
+    setting.location || ""
+  );
+
+  setPhone(
+    setting.phone || ""
+  );
+
+  setEmail(
+    setting.email || ""
+  );
+}
 
   setBanners(
     bannersRes.data || []
   );
+
 
   setCategories(
     categoriesRes.data || []
@@ -346,8 +388,21 @@ if (loading) {
   );
 }
 
-return ( <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+return ( <div
+  className="min-h-screen"
+  style={{
+    backgroundColor:
+      settings?.background_color || "#fafafa",
 
+    backgroundImage:
+      settings?.background_image
+        ? `url(${settings.background_image})`
+        : undefined,
+
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  }}
+>
 
 {/* HEADER */}
 
@@ -356,11 +411,15 @@ return ( <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
     sticky
     top-0
     z-50
-    bg-white/90
+    
     backdrop-blur-md
     border-b
     border-gray-100
   "
+  style={{
+  background:
+    settings?.header_color || "#fff",
+}}
 >
   <div
     className="
@@ -484,7 +543,7 @@ return ( <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
           alt="Banner"
           className="
             w-full
-            h-60
+            h-full
             md:h-[420px]
             object-cover
           "
@@ -551,11 +610,18 @@ return ( <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         h-14
         px-5
         rounded-2xl
-        bg-white
+        
         shadow-lg
         border-0
         outline-none
       "
+      style={{
+  background:
+    settings?.card_color || "#fff",
+
+  color:
+    settings?.card_text_color || "#111827",
+}}
     />
   </div>
 
@@ -716,7 +782,7 @@ return ( <div
           }
           className="
             group
-            bg-white
+           
             rounded-[28px]
             overflow-hidden
             shadow-md
@@ -726,6 +792,13 @@ return ( <div
             cursor-pointer
             hover:-translate-y-2
           "
+           style={{
+  background:
+    settings?.card_color || "#fff",
+
+  color:
+    settings?.card_text_color || "#111827",
+}}
         >
           {/* IMAGE */}
 
@@ -861,16 +934,20 @@ return ( <div
                   text-sm
                   tracking-wide
                   uppercase
-                  bg-gradient-to-r
-                  from-amber-400
-                  via-orange-500
-                  to-orange-600
+        
                   shadow-[0_8px_20px_rgba(249,115,22,0.35)]
                   hover:scale-[1.03]
                   hover:shadow-[0_12px_28px_rgba(249,115,22,0.45)]
                   transition-all
                   duration-300
                 "
+                style={{
+  background: `linear-gradient(
+    90deg,
+    ${settings?.button_gradient_from},
+    ${settings?.button_gradient_to}
+  )`,
+}}
               >
                 View Details
               </button>
@@ -1005,53 +1082,36 @@ return ( <div
       )}
     </div>
   </div>
-</div>
-  <div className="p-6">
 
-    <p
-      className="
-        text-gray-600
-        leading-relaxed
-      "
-    >
-      {selectedItem.description}
-    </p>
+  <div
+  className="
+    p-5
+    md:p-6
+    max-h-[70vh]
+    overflow-y-auto
+  "
+>
+  {/* DESCRIPTION */}
 
-    <div
-      className="
-        mt-6
-        p-4
-        rounded-2xl
-        bg-orange-50
-      "
-    >
-      <p
-        className="
-          text-xs
-          uppercase
-          text-orange-500
-        "
-      >
-        Starting From
-      </p>
+  <p
+    className="
+      text-gray-600
+      leading-relaxed
+      text-sm
+      md:text-base
+    "
+  >
+    {selectedItem.description}
+  </p>
 
-      <p
-        className="
-          text-3xl
-          font-bold
-          text-orange-600
-        "
-      >
-        ₹{getStartingPrice(selectedItem.id)}
-      </p>
-    </div>
+  {/* VARIANTS */}
 
+  <div className="mt-6">
     <h3
       className="
-        mt-8
-        mb-4
-        text-xl
+        text-lg
         font-bold
+        mb-3
       "
     >
       Available Sizes
@@ -1064,18 +1124,23 @@ return ( <div
         <div
           key={variant.id}
           className="
-            flex
-            justify-between
-            items-center
-            p-4
+            bg-gray-50
             rounded-2xl
+            p-4
             border
-            hover:shadow-md
-            transition
+            border-gray-100
+            flex
+            items-center
+            justify-between
           "
         >
           <div>
-            <p className="font-semibold">
+            <p
+              className="
+                font-semibold
+                text-gray-900
+              "
+            >
               {variant.name}
             </p>
 
@@ -1083,57 +1148,81 @@ return ( <div
               className="
                 text-xs
                 text-gray-500
+                mt-1
               "
             >
               Available
             </p>
           </div>
 
-          <p
+          <div
             className="
-              text-xl
+              px-4
+              py-2
+              rounded-full
+              bg-white
+              shadow-sm
               font-bold
+              text-orange-600
             "
           >
             ₹{variant.price}
-          </p>
+          </div>
         </div>
       ))}
     </div>
+  </div>
 
-    <button
-      className="
-        mt-8
-        w-full
-        py-4
-        rounded-full
-        text-white
-        font-bold
-        bg-gradient-to-r
-        from-amber-400
-        via-orange-500
-        to-orange-600
-        shadow-[0_8px_20px_rgba(249,115,22,0.35)]
-      "
-      onClick={() =>
-        toggleFavorite(
-          selectedItem.id
-        )
-      }
-    >
-      {favorites.includes(
+  {/* ACTION BUTTON */}
+
+  <button
+    className="
+      mt-6
+      w-full
+      py-4
+      rounded-full
+      text-white
+      font-bold
+      text-base
+      bg-gradient-to-r
+      from-amber-400
+      via-orange-500
+      to-orange-600
+      shadow-lg
+      sticky
+      bottom-0
+    "
+    onClick={() =>
+      toggleFavorite(
         selectedItem.id
       )
-        ? "❤️ Remove Favorite"
-        : "❤️ Add To Favorites"}
-    </button>
+    }
+  >
+    {favorites.includes(
+      selectedItem.id
+    )
+      ? "Remove from Favorites"
+      : "Save to Favorites"}
+  </button>
+
+  {/* ORDER MESSAGE */}
+
+  <div
+    className="
+      mt-4
+      text-center
+      text-xs
+      text-gray-500
+    "
+  >
+    Please share your selection with
+    the counter or waiter while
+    placing your order.
   </div>
 </div>
- 
-
-  
-)}
 </div>
+</div>
+)}
 {showTopButton && (
   <button
     onClick={scrollToTop}
@@ -1164,11 +1253,16 @@ return ( <div
 )}
 <footer
   className="
-    mt-20
+    mt-8
     py-16
-    bg-black
+    bg-gradient-to-t
+   
     text-white
   "
+   style={{
+  background:
+    settings?.footer_color || "#111827",
+}}
 >
   <div
     className="
@@ -1190,10 +1284,18 @@ return ( <div
     <p
       className="
         mt-3
-        text-gray-300
+        text-white-300
       "
     >
       Fresh Food • Great Taste • Memorable Moments
+    </p>
+        <p
+      className="
+        mt-3
+        text-white-300
+      "
+    >
+      Thank you for choosing us. We look forward to serving you again soon!
     </p>
 
     <div
@@ -1205,22 +1307,30 @@ return ( <div
         flex-wrap
       "
     >
-      <span>📍 Patiala</span>
-      <span>📞 +91 98765 43210</span>
-      <span>📧 hello@cafe.com</span>
-    </div>
+{settings?.location && (
+  <span>
+    📍 {settings.location}
+  </span>
+)}
 
-    <div
-      className="
-        mt-10
-        text-sm
-        text-gray-500
-      "
-    >
-      Designed with ❤️ for food lovers
+{settings?.phone && (
+  <span>
+    📞 {settings.phone}
+  </span>
+)}
+
+{settings?.email && (
+  <span>
+    📧 {settings.email}
+  </span>
+)}
     </div>
   </div>
+  
 </footer>
+
 </div>
+</div>
+
 );
 }
